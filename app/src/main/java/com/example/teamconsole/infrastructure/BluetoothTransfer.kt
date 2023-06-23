@@ -1,8 +1,7 @@
-package com.example.teamconsole.infrastructure.com.bluetooth
+package com.example.teamconsole.infrastructure
 
 import android.bluetooth.BluetoothSocket
 import android.util.Log
-import com.example.teamconsole.infrastructure.SerialCommunication
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
