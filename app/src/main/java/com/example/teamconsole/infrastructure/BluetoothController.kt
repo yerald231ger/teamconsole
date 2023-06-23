@@ -5,11 +5,12 @@ import kotlinx.coroutines.flow.StateFlow
 
 interface BluetoothController {
 
-    val pairedDevices : StateFlow<List<SppDevice>>
-    val boundedDevices : StateFlow<SppDevice?>
+    val boundedDevices : StateFlow<List<SppDevice>?>
+    val scannedDevices : StateFlow<SppDevice?>
 
     fun startDiscovery()
     fun stopDiscovery()
-
     fun release()
+
+    fun startTest()
 }
