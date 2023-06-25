@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">TeamConsole</string>
     <string name="paired_devices">Paired devices</string>
-    <string name="boundes_devices">Boundes devices</string>
+    <string name="bounded_devices">Bounded devices</string>
     <string name="start_discover">Start Discover</string>
+    <string name="no_scan_permission">Can\'t use app without scan permission</string>
 </resources>
