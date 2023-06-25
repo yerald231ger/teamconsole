@@ -42,10 +42,11 @@
                 android:id="@+id/tvPairedDevices"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="18sp"
+                android:textSize="24sp"
                 android:text="@string/paired_devices" />
 
-            <ListView
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvPairedDevices"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
         </LinearLayout>
@@ -61,13 +62,14 @@
             android:orientation="vertical">
 
             <TextView
-                android:id="@+id/tvBoundedDevices"
+                android:id="@+id/tvFoundDevices"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="18sp"
+                android:textSize="24sp"
                 android:text="@string/bounded_devices" />
 
-            <ListView
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvFoundDevices"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
         </LinearLayout>

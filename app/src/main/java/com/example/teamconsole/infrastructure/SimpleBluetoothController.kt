@@ -38,20 +38,6 @@ class SimpleBluetoothController(private val context: Context) : BluetoothControl
     private val _boundedDevices = MutableStateFlow<List<SppDevice>?>(emptyList())
     override val boundedDevices: StateFlow<List<SppDevice>?> = _boundedDevices.asStateFlow()
 
-    override fun startTest() {
-        thread {
-            runBlocking {
-                for (i in 1..10) {
-                    delay(1000)
-                    _boundedDevices.update { devices ->
-                        var newDevice = SppDevice("SppDevice[${i}]", i.toString())
-                        devices?.plus(newDevice)
-                    }
-                }
-            }
-        }
-    }
-
     override fun startDiscovery() {
         if (!hasPermission(Manifest.permission.BLUETOOTH_SCAN))
             throw SecurityException("No ${Manifest.permission.BLUETOOTH_SCAN} permission")
@@ -92,7 +78,7 @@ class SimpleBluetoothController(private val context: Context) : BluetoothControl
     }
 
     private fun BluetoothDevice.toBluetoothDevice() =
-        SppDevice(this.name, this.address)
+        SppDevice(if (this.name is String) this.name else "Unknown device", this.address)
 
     private fun hasPermission(permission: String) =
         context.checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED
