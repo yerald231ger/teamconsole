@@ -33,7 +33,8 @@ class MainActivity : AppCompatActivity() {
         bluetoothManager?.adapter
     }
 
-    private val sppDevices: MutableList<SppDevice> = emptyList<SppDevice>().toMutableList()
+    private val foundSppDevices: MutableList<SppDevice> = emptyList<SppDevice>().toMutableList()
+    private val boundSppDevices: MutableList<SppDevice> = emptyList<SppDevice>().toMutableList()
     private val isBluetoothEnabled: Boolean get() = bluetoothAdapter?.isEnabled == true
 
     @Inject
@@ -75,21 +76,31 @@ class MainActivity : AppCompatActivity() {
             bluetoothController.startDiscovery()
         }
 
-        val sppDeviceAdapter = DeviceAdapter(sppDevices)
-        binding.rvFoundDevices.adapter = sppDeviceAdapter
+        val foundSppDeviceAdapter = DeviceAdapter(foundSppDevices)
+        binding.rvFoundDevices.adapter = foundSppDeviceAdapter
         binding.rvFoundDevices.layoutManager = LinearLayoutManager(this)
 
-        lifecycleScope.launch {
-            bluetoothController.boundedDevices.collect {
+        val boundSppDeviceAdapter = DeviceAdapter(boundSppDevices)
+        binding.rvBoundDevices.adapter = boundSppDeviceAdapter
+        binding.rvBoundDevices.layoutManager = LinearLayoutManager(this)
 
+        lifecycleScope.launch {
+            bluetoothController.boundDevices.collect {
+                for (sppDevice in it) {
+                    if (!boundSppDevices.contains(sppDevice)) {
+                        boundSppDevices += sppDevice
+                        boundSppDeviceAdapter.notifyItemInserted(boundSppDevices.size - 1)
+                    }
+                }
             }
         }
 
         lifecycleScope.launch {
-            bluetoothController.scannedDevices.collect {
-                if(it is SppDevice)
-                    sppDevices += it
-                sppDeviceAdapter.notifyItemInserted(sppDevices.size - 1)
+            bluetoothController.foundDevices.collect {
+                if (!boundSppDevices.contains(it) && it.address != "") {
+                    foundSppDevices += it
+                    foundSppDeviceAdapter.notifyItemInserted(foundSppDevices.size - 1)
+                }
             }
         }
     }

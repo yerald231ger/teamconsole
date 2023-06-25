@@ -7,19 +7,17 @@ import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.content.IntentFilter
 import android.content.pm.PackageManager
+import android.util.Log
 import com.example.teamconsole.infrastructure.models.SppDevice
 import com.example.teamconsole.infrastructure.receivers.FoundDeviceReceiver
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.runBlocking
-import kotlin.concurrent.thread
 
 @SuppressLint("MissingPermission")
 class SimpleBluetoothController(private val context: Context) : BluetoothController {
 
+    private val tag = "SimpleBluetoothController"
     private val bluetoothManager by lazy {
         context.getSystemService(BluetoothManager::class.java)
     }
@@ -29,14 +27,19 @@ class SimpleBluetoothController(private val context: Context) : BluetoothControl
     }
 
     private val _foundDeviceReceiver: FoundDeviceReceiver = FoundDeviceReceiver {
-        _scannedDevices.tryEmit(it?.toBluetoothDevice())
+        if (it is BluetoothDevice)
+            _foundDevices.tryEmit(it.toBluetoothDevice())
     }
 
-    private val _scannedDevices = MutableStateFlow<SppDevice?>(null)
-    override val scannedDevices: StateFlow<SppDevice?> = _scannedDevices.asStateFlow()
+    private val _foundDevices = MutableStateFlow(SppDevice("", ""))
+    override val foundDevices: StateFlow<SppDevice> = _foundDevices.asStateFlow()
 
-    private val _boundedDevices = MutableStateFlow<List<SppDevice>?>(emptyList())
-    override val boundedDevices: StateFlow<List<SppDevice>?> = _boundedDevices.asStateFlow()
+    private val _boundDevices = MutableStateFlow<List<SppDevice>>(emptyList())
+    override val boundDevices: StateFlow<List<SppDevice>> = _boundDevices.asStateFlow()
+
+    init {
+        updateBoundedDevices()
+    }
 
     override fun startDiscovery() {
         if (!hasPermission(Manifest.permission.BLUETOOTH_SCAN))
@@ -57,11 +60,15 @@ class SimpleBluetoothController(private val context: Context) : BluetoothControl
         if (!hasPermission(Manifest.permission.BLUETOOTH_SCAN))
             throw SecurityException("No ${Manifest.permission.BLUETOOTH_SCAN} permission")
 
-        bluetoothAdapter?.cancelDiscovery();
+        bluetoothAdapter?.cancelDiscovery()
     }
 
     override fun release() {
         context.unregisterReceiver(_foundDeviceReceiver)
+    }
+
+    override fun test() {
+        updateBoundedDevices()
     }
 
     private fun updateBoundedDevices() {
@@ -73,7 +80,12 @@ class SimpleBluetoothController(private val context: Context) : BluetoothControl
             ?.map {
                 it.toBluetoothDevice()
             }.also {
-                _boundedDevices.update { it }
+                if (it is List<SppDevice>)
+                    for (i in it)
+                        Log.i(tag, "Bound device: [${i.name}][${i.address}]")
+
+                if (it is List<SppDevice>)
+                    _boundDevices.tryEmit(it)
             }
     }
 
