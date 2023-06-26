@@ -7,12 +7,12 @@ import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.content.IntentFilter
 import android.content.pm.PackageManager
-import android.util.Log
 import com.example.teamconsole.infrastructure.models.SppDevice
 import com.example.teamconsole.infrastructure.receivers.FoundDeviceReceiver
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 
 @SuppressLint("MissingPermission")
 class SimpleBluetoothController(private val context: Context) : BluetoothController {
@@ -27,12 +27,11 @@ class SimpleBluetoothController(private val context: Context) : BluetoothControl
     }
 
     private val _foundDeviceReceiver: FoundDeviceReceiver = FoundDeviceReceiver {
-        if (it is BluetoothDevice)
-            _foundDevices.tryEmit(it.toBluetoothDevice())
+            _foundDevices.tryEmit(it?.toBluetoothDevice())
     }
 
-    private val _foundDevices = MutableStateFlow(SppDevice("", ""))
-    override val foundDevices: StateFlow<SppDevice> = _foundDevices.asStateFlow()
+    private val _foundDevices = MutableStateFlow<SppDevice?>(null)
+    override val foundDevices: StateFlow<SppDevice?> = _foundDevices.asStateFlow()
 
     private val _boundDevices = MutableStateFlow<List<SppDevice>>(emptyList())
     override val boundDevices: StateFlow<List<SppDevice>> = _boundDevices.asStateFlow()
@@ -79,17 +78,14 @@ class SimpleBluetoothController(private val context: Context) : BluetoothControl
             ?.bondedDevices
             ?.map {
                 it.toBluetoothDevice()
-            }.also {
-                if (it is List<SppDevice>)
-                    for (i in it)
-                        Log.i(tag, "Bound device: [${i.name}][${i.address}]")
-
-                if (it is List<SppDevice>)
-                    _boundDevices.tryEmit(it)
+            }
+            .also { sppDevices ->
+                if (sppDevices is List<SppDevice>)
+                    _boundDevices.update{ sppDevices }
             }
     }
 
-    private fun BluetoothDevice.toBluetoothDevice() =
+    private fun BluetoothDevice.toBluetoothDevice() : SppDevice =
         SppDevice(if (this.name is String) this.name else "Unknown device", this.address)
 
     private fun hasPermission(permission: String) =
