@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.callbackFlow
 import java.util.UUID
 
-class FoundDeviceReceiver(val callback: (BluetoothDevice?) -> Unit) : BroadcastReceiver() {
+class FoundDeviceReceiver(val callback: (BluetoothDevice) -> Unit) : BroadcastReceiver() {
 
     private val tag = "FoundDeviceReceiver"
 
@@ -22,13 +22,15 @@ class FoundDeviceReceiver(val callback: (BluetoothDevice?) -> Unit) : BroadcastR
                 val uuids = intent.getParcelableArrayExtra(BluetoothDevice.EXTRA_UUID, Array<UUID>::class.java)
                 val device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE, BluetoothDevice::class.java)
                 Log.i(tag, "Uuid: $uuids. Device = [${device?.name}][${device?.address}]")
-                callback(device)
+                if(device is BluetoothDevice)
+                    callback(device)
             }
 
             BluetoothDevice.ACTION_FOUND -> {
                 val device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE,BluetoothDevice::class.java)
                 Log.i(tag, "Uuid: Device = [${device?.name}][${device?.address}]")
-                callback(device)
+                if(device is BluetoothDevice)
+                    callback(device)
             }
         }
     }

@@ -97,9 +97,11 @@ class MainActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             bluetoothController.foundDevices.collect {
-                if (!boundSppDevices.contains(it) && it != null) {
-                    foundSppDevices += it
-                    foundSppDeviceAdapter.notifyItemInserted(foundSppDevices.size - 1)
+                for (sppDevice in it) {
+                    if (!foundSppDevices.contains(sppDevice) && !boundSppDevices.contains(sppDevice)) {
+                        foundSppDevices += sppDevice
+                        foundSppDeviceAdapter.notifyItemInserted(foundSppDevices.size - 1)
+                    }
                 }
             }
         }

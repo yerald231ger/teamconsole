@@ -26,15 +26,21 @@ class SimpleBluetoothController(private val context: Context) : BluetoothControl
         bluetoothManager?.adapter
     }
 
-    private val _foundDeviceReceiver: FoundDeviceReceiver = FoundDeviceReceiver {
-            _foundDevices.tryEmit(it?.toBluetoothDevice())
+    private val _foundDeviceReceiver: FoundDeviceReceiver = FoundDeviceReceiver { bluetoohDevice ->
+        _foundDevices.update { sppDevices ->
+            val newSppDevice = bluetoohDevice.toBluetoothDevice()
+            if (newSppDevice in sppDevices) sppDevices else sppDevices + newSppDevice
+        }
     }
 
-    private val _foundDevices = MutableStateFlow<SppDevice?>(null)
-    override val foundDevices: StateFlow<SppDevice?> = _foundDevices.asStateFlow()
+
+    private val _foundDevices = MutableStateFlow<List<SppDevice>>(emptyList())
+    override val foundDevices: StateFlow<List<SppDevice>>
+        get() = _foundDevices.asStateFlow()
 
     private val _boundDevices = MutableStateFlow<List<SppDevice>>(emptyList())
-    override val boundDevices: StateFlow<List<SppDevice>> = _boundDevices.asStateFlow()
+    override val boundDevices: StateFlow<List<SppDevice>>
+        get() = _boundDevices.asStateFlow()
 
     init {
         updateBoundedDevices()
@@ -81,11 +87,11 @@ class SimpleBluetoothController(private val context: Context) : BluetoothControl
             }
             .also { sppDevices ->
                 if (sppDevices is List<SppDevice>)
-                    _boundDevices.update{ sppDevices }
+                    _boundDevices.update { sppDevices }
             }
     }
 
-    private fun BluetoothDevice.toBluetoothDevice() : SppDevice =
+    private fun BluetoothDevice.toBluetoothDevice(): SppDevice =
         SppDevice(if (this.name is String) this.name else "Unknown device", this.address)
 
     private fun hasPermission(permission: String) =
