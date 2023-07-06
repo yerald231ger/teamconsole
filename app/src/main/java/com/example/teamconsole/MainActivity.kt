@@ -9,13 +9,16 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.teamconsole.databinding.ActivityMainBinding
 import com.example.teamconsole.infrastructure.BluetoothController
 import com.example.teamconsole.infrastructure.models.SppDevice
 import com.example.teamconsole.models.DeviceAdapter
+import com.example.teamconsole.presentation.SplashViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -33,6 +36,8 @@ class MainActivity : AppCompatActivity() {
         bluetoothManager?.adapter
     }
 
+    private val _viewModel : SplashViewModel by viewModels()
+
     private val foundSppDevices: MutableList<SppDevice> = emptyList<SppDevice>().toMutableList()
     private val boundSppDevices: MutableList<SppDevice> = emptyList<SppDevice>().toMutableList()
     private val isBluetoothEnabled: Boolean get() = bluetoothAdapter?.isEnabled == true
@@ -42,6 +47,12 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        installSplashScreen().apply {
+            setKeepOnScreenCondition {
+                _viewModel.isLoading.value
+            }
+        }
+
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
