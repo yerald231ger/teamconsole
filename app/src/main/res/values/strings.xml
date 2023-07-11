@@ -6,4 +6,5 @@
     <string name="activity_created">Activity created</string>
     <string name="bound_devices">Bound devices</string>
     <string name="found_devices">Found devices</string>
+    <string name="title_activity_devices">DevicesActivity</string>
 </resources>

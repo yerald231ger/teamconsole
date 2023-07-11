@@ -36,8 +36,6 @@ class MainActivity : AppCompatActivity() {
         bluetoothManager?.adapter
     }
 
-    private val _viewModel : SplashViewModel by viewModels()
-
     private val foundSppDevices: MutableList<SppDevice> = emptyList<SppDevice>().toMutableList()
     private val boundSppDevices: MutableList<SppDevice> = emptyList<SppDevice>().toMutableList()
     private val isBluetoothEnabled: Boolean get() = bluetoothAdapter?.isEnabled == true
@@ -47,12 +45,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        installSplashScreen().apply {
-            setKeepOnScreenCondition {
-                _viewModel.isLoading.value
-            }
-        }
-
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
